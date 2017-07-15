@@ -1,0 +1,14 @@
+.vs
+bin
+obj
+*.suo
+*.user
+*.lock.json
+*.ldb
+*.vspx
+TestResult.xml
+packages
+publish
+
+# Chocolatey artifacts
+*.nupkg
