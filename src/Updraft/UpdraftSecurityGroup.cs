@@ -40,9 +40,11 @@ namespace Updraft
 
         public void AddIngressPermission(IpPermission permission)
         {
-            var request = new AuthorizeSecurityGroupIngressRequest(
-                securityGroupName,
-                new List<IpPermission> { permission });
+            var request = new AuthorizeSecurityGroupIngressRequest
+            {
+                GroupId = GetSecurityGroup().GroupId,
+                IpPermissions = { permission }
+            };
 
             try
             {
@@ -64,9 +66,11 @@ namespace Updraft
 
         public void RemoveIngressPermission(IpPermission permission)
         {
-            var request = new RevokeSecurityGroupIngressRequest(
-                securityGroupName,
-                new List<IpPermission> { permission });
+            var request = new RevokeSecurityGroupIngressRequest
+            {
+                GroupId = GetSecurityGroup().GroupId,
+                IpPermissions = { permission }
+            };
 
             client.RevokeSecurityGroupIngress(request);
         }
@@ -106,7 +110,7 @@ namespace Updraft
             return client
                 .DescribeSecurityGroups(request)
                 .SecurityGroups
-                .FirstOrDefault();
+                .SingleOrDefault();
         }
 
         private SecurityGroup CreateSecurityGroup()
