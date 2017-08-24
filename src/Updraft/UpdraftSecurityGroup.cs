@@ -2,6 +2,7 @@
 using System.Linq;
 using Amazon.EC2;
 using Amazon.EC2.Model;
+using NLog;
 
 namespace Updraft
 {
@@ -14,6 +15,7 @@ namespace Updraft
         private readonly AmazonEC2Client client;
         private readonly string securityGroupName;
         private readonly string vpcId;
+        private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public UpdraftSecurityGroup(AmazonEC2Client client, string securityGroupName, string vpcId)
         {
@@ -57,6 +59,7 @@ namespace Updraft
                 // .last-config or .last-ip files.
                 if (e.ErrorCode.Equals("InvalidPermission.Duplicate"))
                 {
+                    logger.Warn("Tried to create a duplicate ingress rule for group " + request.GroupId);
                     return;
                 }
 
@@ -72,7 +75,21 @@ namespace Updraft
                 IpPermissions = { permission }
             };
 
-            client.RevokeSecurityGroupIngress(request);
+            try
+            {
+                client.RevokeSecurityGroupIngress(request);
+            }
+            catch(AmazonEC2Exception e)
+            {
+                // If the ingress rule didn't exist then don't complain.
+                if (e.ErrorCode.Equals("InvalidGroup.NotFound"))
+                {
+                    logger.Warn("Tried to delete an ingress rule that did not exist for group " + request.GroupId);
+                    return;
+                }
+
+                throw;
+            }
         }
 
         /// <summary>

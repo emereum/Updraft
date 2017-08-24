@@ -44,7 +44,7 @@ namespace Updraft
             }
         }
 
-        private void DoUpdateThunk()
+        private void DoUpdateThunk(bool force = false)
         {
             var config = Config.Read("updraft-config.json");
             if (config == null)
@@ -70,11 +70,20 @@ namespace Updraft
             // If our ip is the same do nothing
             if (currentIp.Equals(lastIp))
             {
-                logger.Trace("IP hasn't changed: " + currentIp);
-                return;
+                if (force)
+                {
+                    logger.Info("IP hasn't changed: " + currentIp + " but we are starting up so we'll apply this IP to AWS anyway.");
+                }
+                else
+                {
+                    logger.Trace("IP hasn't changed: " + currentIp);
+                    return;
+                }
             }
-
-            logger.Info("IP has changed from " + (lastIp ?? "nothing") + " to " + currentIp + ". Applying changes to AWS.");
+            else
+            {
+                logger.Info("IP has changed from " + (lastIp ?? "nothing") + " to " + currentIp + ". Applying changes to AWS.");
+            }
 
             CleanupOldPermissions(lastIp);
 
@@ -170,7 +179,7 @@ Starting Updraft...
 
 ");
             Config.CreateIfNotExists();
-            DoUpdateThunk();
+            DoUpdateThunk(true);
             timer.Start();
         }
 
