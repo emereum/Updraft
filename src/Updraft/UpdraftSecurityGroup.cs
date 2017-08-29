@@ -82,9 +82,17 @@ namespace Updraft
             catch(AmazonEC2Exception e)
             {
                 // If the ingress rule didn't exist then don't complain.
+                if (e.ErrorCode.Equals("InvalidPermission.NotFound"))
+                {
+                    logger.Warn("Tried to delete an ingress rule that did not exist in group " + request.GroupId);
+                    return;
+                }
+
+                // If the group which should contain this rule does not
+                // exist then don't complain.
                 if (e.ErrorCode.Equals("InvalidGroup.NotFound"))
                 {
-                    logger.Warn("Tried to delete an ingress rule that did not exist for group " + request.GroupId);
+                    logger.Warn("Tried to delete an ingress rule from a group that does not exist " + request.GroupId);
                     return;
                 }
 

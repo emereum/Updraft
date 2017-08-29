@@ -17,7 +17,7 @@ task :build do
 end
 
 task :pack => [:build] do
-    rm_r PUBLISH_DIR
+    rm_rf PUBLISH_DIR
     cp_r File.join(SRC_DIR, "Updraft", "bin", CONFIGURATION), PUBLISH_DIR
     
     Dir.chdir(PUBLISH_DIR) do
